@@ -10,6 +10,13 @@
     "dev": "tsup --watch",
     "clean:build": "git clean -xdf dist .turbo"
   },
+  "exports": {
+    "./router": "./dist/router.js",
+    "./function": {
+      "react-server": "./dist/function/server.js",
+      "default": "./dist/function/client.js"
+    }
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
