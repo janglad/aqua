@@ -1,3 +1,4 @@
+import { pathPrefix } from "../env";
 import type { AResult } from "../result";
 import {
   AquaFunction as AquaFunctionBase,
@@ -5,21 +6,6 @@ import {
 } from "./function";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import "client-only";
-
-const pathPrefix: `/${string}` = (() => {
-  // TODO: check for invalid values in this
-  const envValue = process.env.NEXT_PUBLIC_AQUA_PATH_PREFIX;
-
-  if (envValue === undefined) {
-    return "/_aqua";
-  }
-
-  if (envValue.startsWith("/")) {
-    return envValue as `/${string}`;
-  }
-
-  return `/${envValue}` as `/${string}`;
-})();
 
 export class AquaFunction<
   TError,
@@ -103,6 +89,7 @@ export class AquaFunction<
   async run(input: TInput): Promise<AResult<TTransformOutput, TError>> {
     const url =
       pathPrefix +
+      `/${this.id}` +
       (this.type === "query"
         ? `?q=${encodeURIComponent(JSON.stringify(input))}`
         : "");

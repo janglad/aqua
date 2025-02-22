@@ -1,3 +1,4 @@
+import { pathPrefix } from "./env";
 import type { AnyQuaFunction } from "./function/function";
 
 export class AquaRouter {
@@ -22,7 +23,7 @@ export class AquaRouter {
 
   async handleRequest(req: Request) {
     const reqUrl = new URL(req.url);
-    const requestPath = reqUrl.pathname;
+    const requestPath = reqUrl.pathname.replace(`${pathPrefix}/`, "");
 
     if (req.method !== "POST" && req.method !== "GET") {
       throw new Error(`Unsupported method ${req.method}`);
@@ -34,6 +35,8 @@ export class AquaRouter {
         : this.queryMap.get(requestPath);
 
     if (!handler) {
+      console.log(this.queryMap);
+      console.log(this.mutationMap);
       throw new Error(`No handler found for ${requestPath}`);
     }
 
