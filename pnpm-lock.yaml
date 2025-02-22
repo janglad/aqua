@@ -16,7 +16,7 @@ importers:
         specifier: ^2.3.3
         version: 2.4.2
 
-  apps/my-app:
+  apps/e2e:
     dependencies:
       '@repo/config-typescript':
         specifier: workspace:^
