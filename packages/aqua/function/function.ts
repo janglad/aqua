@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { AResult } from "./result";
+import type { AResult } from "../result";
 
 export type AquaFunctionType = "query" | "mutation";
 
@@ -54,7 +54,7 @@ export abstract class AquaFunction<
     TNewTransformOutput
   >;
 
-  abstract run(input: TInput): Promise<AResult<TOutput, TError>>;
+  abstract run(input: TInput): Promise<AResult<TTransformOutput, TError>>;
 
   query(id: string): AquaFunction<TData, TError, TInput, TOutput> {
     return this.createInstance(
