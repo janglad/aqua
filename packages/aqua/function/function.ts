@@ -2,7 +2,7 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { AResult } from "../result";
 
 export type AquaFunctionType = "query" | "mutation";
-
+export type AnyQuaFunction = AquaFunction<any, any, any, any>;
 export abstract class AquaFunction<
   TData,
   TError,
