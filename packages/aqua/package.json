@@ -16,7 +16,8 @@
       "react-server": "./dist/function/server.js",
       "default": "./dist/function/client.js"
     },
-    "./plugin": "./dist/plugin.js"
+    "./plugin": "./dist/plugin.js",
+    "./plugin/babel": "./dist/plugin/babel.js"
   },
   "keywords": [],
   "author": "",
