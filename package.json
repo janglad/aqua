@@ -1,0 +1,21 @@
+{
+  "name": "aqua",
+  "version": "0.0.1",
+  "private": true,
+  "keywords": [],
+  "author": "janglad",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "format": "turbo run format",
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter=aqua"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  }
+}

@@ -1,0 +1,37 @@
+node_modules/
+tsconfig.vitest-temp.json
+
+.DS_Store
+coverage
+# Random file I keep around for quickly trying stuff
+sandbox.ts
+.turbo
+dist/
+.env
+
+#From Fumadocs
+# generated content
+.contentlayer
+.content-collections
+.source
+
+# test & build
+.next
+.next
+/out/
+/build
+*.tsbuildinfo
+
+# misc
+*.pem
+/.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# others
+.env*.local
+.vercel
+next-env.d.ts
+
