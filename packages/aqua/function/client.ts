@@ -1,3 +1,5 @@
+import "client-only";
+
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import {
   AquaFunction as AquaFunctionBase,
