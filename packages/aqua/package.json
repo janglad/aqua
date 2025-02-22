@@ -1,0 +1,26 @@
+{
+  "name": "aqua",
+  "version": "0.0.1",
+  "private": false,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean:build": "git clean -xdf dist .turbo"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@repo/config-prettier": "workspace:^",
+    "@types/node": "^20",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@repo/config-typescript": "workspace:^"
+  }
+}
