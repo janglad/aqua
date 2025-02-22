@@ -7,8 +7,14 @@ export class AquaRouter {
   constructor(functions: AnyQuaFunction[]) {
     for (const func of functions) {
       if (func.type === "query") {
+        if (this.queryMap.has(func.id)) {
+          throw new Error(`Duplicate query function id: ${func.id}`);
+        }
         this.queryMap.set(func.id, func);
       } else {
+        if (this.mutationMap.has(func.id)) {
+          throw new Error(`Duplicate mutation function id: ${func.id}`);
+        }
         this.mutationMap.set(func.id, func);
       }
     }
