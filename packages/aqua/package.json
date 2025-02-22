@@ -21,6 +21,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@repo/config-typescript": "workspace:^"
+    "@repo/config-typescript": "workspace:^",
+    "@standard-schema/spec": "^1.0.0"
   }
 }
