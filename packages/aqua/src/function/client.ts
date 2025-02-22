@@ -1,11 +1,10 @@
-import "client-only";
-
-import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { AResult } from "../result";
 import {
   AquaFunction as AquaFunctionBase,
   type AquaFunctionType,
 } from "./function";
-import type { AResult } from "../result";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import "client-only";
 
 const pathPrefix: `/${string}` = (() => {
   // TODO: check for invalid values in this
@@ -23,14 +22,12 @@ const pathPrefix: `/${string}` = (() => {
 })();
 
 export class AquaFunction<
-  TData,
   TError,
   TInput,
   TOutput,
-  TTransformInput = TInput,
-  TTransformOutput = TOutput,
+  TTransformInput,
+  TTransformOutput,
 > extends AquaFunctionBase<
-  TData,
   TError,
   TInput,
   TOutput,
@@ -42,13 +39,38 @@ export class AquaFunction<
     type: AquaFunctionType,
     inputSchema: StandardSchemaV1<TInput, TTransformInput>,
     outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    handlerFn: (
+      input: TTransformInput,
+    ) => Promise<AResult<TTransformOutput, any>>,
   ) {
     super(id, type, inputSchema, outputSchema, handlerFn);
   }
 
+  static override query(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    return new AquaFunction(
+      id,
+      "query",
+      undefined as never,
+      undefined as never,
+      undefined as never,
+    );
+  }
+
+  static override mutation(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    return new AquaFunction(
+      id,
+      "mutation",
+      undefined as never,
+      undefined as never,
+      undefined as never,
+    );
+  }
+
   createInstance<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -59,9 +81,10 @@ export class AquaFunction<
     type: AquaFunctionType,
     inputSchema: StandardSchemaV1<TInput, TTransformInput>,
     outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    handlerFn: (
+      input: TTransformInput,
+    ) => Promise<AResult<TTransformOutput, any>>,
   ): AquaFunction<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -73,7 +96,7 @@ export class AquaFunction<
       type,
       inputSchema,
       outputSchema,
-      handlerFn
+      handlerFn,
     ) as any;
   }
 

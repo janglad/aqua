@@ -1,21 +1,18 @@
-import "server-only";
-
-import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { AResult } from "../result";
 import {
   AquaFunction as AquaFunctionBase,
   type AquaFunctionType,
 } from "./function";
-import type { AResult } from "../result";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import "server-only";
 
 export class AquaFunction<
-  TData,
   TError,
   TInput,
   TOutput,
-  TTransformInput = TInput,
-  TTransformOutput = TOutput,
+  TTransformInput,
+  TTransformOutput,
 > extends AquaFunctionBase<
-  TData,
   TError,
   TInput,
   TOutput,
@@ -27,13 +24,14 @@ export class AquaFunction<
     type: AquaFunctionType,
     inputSchema: StandardSchemaV1<TInput, TTransformInput>,
     outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    handlerFn: (
+      input: TTransformInput,
+    ) => Promise<AResult<TTransformOutput, any>>,
   ) {
     super(id, type, inputSchema, outputSchema, handlerFn);
   }
 
   createInstance<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -44,9 +42,10 @@ export class AquaFunction<
     type: AquaFunctionType,
     inputSchema: StandardSchemaV1<TInput, TTransformInput>,
     outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    handlerFn: (
+      input: TTransformInput,
+    ) => Promise<AResult<TTransformOutput, any>>,
   ): AquaFunction<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -58,8 +57,32 @@ export class AquaFunction<
       type,
       inputSchema,
       outputSchema,
-      handlerFn
+      handlerFn,
     ) as any;
+  }
+
+  static override query(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    return new AquaFunction(
+      id,
+      "query",
+      undefined as never,
+      undefined as never,
+      undefined as never,
+    );
+  }
+
+  static override mutation(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    return new AquaFunction(
+      id,
+      "mutation",
+      undefined as never,
+      undefined as never,
+      undefined as never,
+    );
   }
 
   async run(input: TInput): Promise<AResult<TTransformOutput, TError>> {
@@ -79,9 +102,13 @@ export class AquaFunction<
       };
     }
 
-    let output: TTransformOutput = await this.handlerFn(
-      transformedInputResult.value
-    );
+    const handlerRes = await this.handlerFn(transformedInputResult.value);
+
+    if (handlerRes.ok === false) {
+      return handlerRes;
+    }
+
+    let output = handlerRes.data;
 
     if (this.outputSchema !== undefined) {
       let transformedOutputResult =

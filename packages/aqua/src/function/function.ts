@@ -1,28 +1,31 @@
+import type { AResult, InferAErr, InferAOk } from "../result";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
-import type { AResult } from "../result";
 
 export type AquaFunctionType = "query" | "mutation";
-export type AnyQuaFunction = AquaFunction<any, any, any, any>;
+export type AnyQuaFunction = AquaFunction<any, any, any, any, any>;
 export abstract class AquaFunction<
-  TData,
   TError,
   TInput,
   TOutput,
-  TTransformInput = TInput,
-  TTransformOutput = TOutput,
+  TTransformedInput,
+  TTransformedOutput,
 > {
   id: string;
   type: AquaFunctionType;
-  inputSchema: StandardSchemaV1<TInput, TTransformInput>;
-  outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined;
-  handlerFn: (input: TTransformInput) => Promise<TTransformOutput>;
+  inputSchema: StandardSchemaV1<TInput, TTransformedInput>;
+  outputSchema: StandardSchemaV1<TOutput, TTransformedOutput> | undefined;
+  handlerFn: (
+    input: TTransformedInput,
+  ) => Promise<AResult<TTransformedOutput, any>>;
 
   protected constructor(
     id: string,
     type: AquaFunctionType,
-    inputSchema: StandardSchemaV1<TInput, TTransformInput>,
-    outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    inputSchema: StandardSchemaV1<TInput, TTransformedInput>,
+    outputSchema: StandardSchemaV1<TOutput, TTransformedOutput> | undefined,
+    handlerFn: (
+      input: TTransformedInput,
+    ) => Promise<AResult<TTransformedOutput, any>>,
   ) {
     this.id = id;
     this.type = type;
@@ -33,7 +36,6 @@ export abstract class AquaFunction<
 
   // This allows us to implement shared parts of the builder in this abstract class
   abstract createInstance<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -42,11 +44,12 @@ export abstract class AquaFunction<
   >(
     id: string,
     type: AquaFunctionType,
-    inputSchema: StandardSchemaV1<TInput, TTransformInput>,
-    outputSchema: StandardSchemaV1<TOutput, TTransformOutput> | undefined,
-    handlerFn: (input: TTransformInput) => Promise<TTransformOutput>
+    inputSchema: StandardSchemaV1<TInput, TTransformedInput>,
+    outputSchema: StandardSchemaV1<TOutput, TTransformedOutput> | undefined,
+    handlerFn: (
+      input: TTransformedInput,
+    ) => Promise<AResult<TTransformedOutput, any>>,
   ): AquaFunction<
-    TNewData,
     TNewError,
     TNewInput,
     TNewOutput,
@@ -54,48 +57,52 @@ export abstract class AquaFunction<
     TNewTransformOutput
   >;
 
-  abstract run(input: TInput): Promise<AResult<TTransformOutput, TError>>;
+  abstract run(input: TInput): Promise<AResult<TTransformedOutput, TError>>;
 
-  query(id: string): AquaFunction<TData, TError, TInput, TOutput> {
-    return this.createInstance(
-      id,
-      "query",
-      this.inputSchema,
-      this.outputSchema,
-      this.handlerFn
-    );
+  static query(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    throw new Error("You've instantiated an abstract class?");
   }
 
-  mutation(id: string): AquaFunction<TData, TError, TInput, TOutput> {
-    return this.createInstance(
-      id,
-      "mutation",
-      this.inputSchema,
-      this.outputSchema,
-      this.handlerFn
-    );
+  static mutation(
+    id: string,
+  ): AquaFunction<never, unknown, unknown, unknown, unknown> {
+    throw new Error("You've instantiated an abstract class?");
   }
 
   input<TNewInput, TNewTransformInput = TNewInput>(
-    schema: StandardSchemaV1<TNewInput, TNewTransformInput>
-  ): AquaFunction<TData, TError, TNewInput, TOutput, TNewTransformInput> {
+    schema: StandardSchemaV1<TNewInput, TNewTransformInput>,
+  ): AquaFunction<
+    {
+      _tag: "INPUT_PARSING";
+      cause: StandardSchemaV1.FailureResult;
+    },
+    TNewInput,
+    TOutput,
+    TNewTransformInput,
+    TTransformedOutput
+  > {
     return this.createInstance(
       this.id,
       this.type,
       schema as any,
       this.outputSchema,
-      this.handlerFn
+      this.handlerFn,
     );
   }
 
-  output<TNewOutput, TNewTransformOutput>(
-    schema: StandardSchemaV1<TNewOutput, TNewTransformOutput>
+  output<TNewOutput extends TOutput, TNewTransformOutput>(
+    schema: StandardSchemaV1<TNewOutput, TNewTransformOutput>,
   ): AquaFunction<
-    TData,
-    TError,
+    | TError
+    | {
+        _tag: "OUTPUT_PARSING";
+        cause: StandardSchemaV1.FailureResult;
+      },
     TInput,
     TNewOutput,
-    TTransformInput,
+    TTransformedInput,
     TNewTransformOutput
   > {
     return this.createInstance(
@@ -103,26 +110,25 @@ export abstract class AquaFunction<
       this.type,
       this.inputSchema,
       schema as any,
-      this.handlerFn
+      this.handlerFn,
     );
   }
 
-  handler<TNewOutput>(
-    handlerFn: (input: TTransformInput) => Promise<TNewOutput>
+  handler<THandlerRes extends AResult<TOutput, any>>(
+    handlerFn: (input: TTransformedInput) => Promise<THandlerRes>,
   ): AquaFunction<
-    TData,
-    TError,
+    TError | InferAErr<THandlerRes>,
     TInput,
-    TNewOutput,
-    TTransformInput,
-    TNewOutput
+    InferAOk<THandlerRes>,
+    TTransformedInput,
+    InferAOk<THandlerRes>
   > {
     return this.createInstance(
       this.id,
       this.type,
       this.inputSchema,
       this.outputSchema,
-      handlerFn as any
+      handlerFn as any,
     );
   }
 }
