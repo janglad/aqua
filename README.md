@@ -24,6 +24,41 @@ You can then call this function on the client or server.
 const data = await myQuery.run({ name: "world" });
 ```
 
+This enabled cool patterns like this:
+
+```ts
+import { getTodos } from "./todos.aqua";
+import { queryOptions } from "@tanstack/react-query";
+
+export const getTodoQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["todos", id],
+    queryFn: () => getTodos.run({ id }),
+  });
+
+//   Server component
+
+export function Todo({ id }: { id: string }) {
+  const queryClient = getQueryClient();
+  void queryClient.prefetchQuery(getTodoQueryOptions(id));
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <TodoComponent id={id} />
+    </HydrationBoundary>
+  );
+}
+
+// Client component
+export function TodoClient({ id }: { id: string }) {
+  const { data } = useSuspenseQuery(getTodoQueryOptions(id));
+
+  return <div>{data.title}</div>;
+}
+```
+
+while also avoiding the issues like possible circular dependencies for RPC client/router for types and poor performance of the types with solutions like Hono RPC.
+
 ## What and why
 
 Like server actions, but allows concurrent requests, GET endpoint and allows you to specify a URL for the endpoint. This makes it more friendly for self hosted solutions that don't have Vercel's skew protection.
