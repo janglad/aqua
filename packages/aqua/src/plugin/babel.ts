@@ -1,8 +1,16 @@
-// @ts-nocheck
+import type { NodePath, PluginObj } from "@babel/core";
+import * as babelTypes from "@babel/types";
+
+// Import Scope type
+
 // This is AI generated slop right now. Probably can do better.
-export function AquaPlugin({ types: t }) {
+export function AquaPlugin({
+  types: t,
+}: {
+  types: typeof babelTypes;
+}): PluginObj {
   // Walks up the chain to find the root expression.
-  function getChainRoot(node) {
+  function getChainRoot(node: babelTypes.Expression) {
     let current = node;
     // For chained calls like: AquaFunction.query("queryOne").input(...).handler(...)
     // we keep walking back until we get the original expression.
@@ -16,7 +24,10 @@ export function AquaPlugin({ types: t }) {
   }
 
   // Checks whether the root of the chain comes from AquaFunction.query or AquaFunction.mutation.
-  function isChainFromAquaFunction(root, scope) {
+  function isChainFromAquaFunction(
+    root: babelTypes.Expression,
+    scope: NodePath["scope"],
+  ) {
     // Case 1: The chain starts directly with a call expression:
     // e.g. AquaFunction.query("queryOne")
     if (t.isCallExpression(root)) {
