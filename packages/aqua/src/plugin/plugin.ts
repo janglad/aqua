@@ -1,4 +1,4 @@
-import { AquaPlugin } from "./babel";
+import { RemoveFromClient } from "./babel";
 import type { NextConfig } from "next";
 import type { Configuration } from "webpack";
 
@@ -21,7 +21,7 @@ export const withAquaPlugin = (nextConfig: NextConfig): NextConfig => {
             options: {
               sourceMaps: context.dev,
               presets: [require.resolve("@babel/preset-typescript")],
-              plugins: [AquaPlugin],
+              plugins: [RemoveFromClient],
             },
           },
         ],
